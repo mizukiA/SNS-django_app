@@ -75,8 +75,8 @@ def groups(request):
                 item.group = group_obj
                 item.save()
                 vlist.append(item.user.username)
-            messages.success(request, 'チェックされたFriendを' + \
-                    sel_group + 'に登録しました')
+            messages.success(request, 'SUCCESS!! your Friend add to' + \
+                    sel_group + '!! yeah!!')
             groupsform = GroupSelectForm(request.user,\
                     {'groups': sel_group})
             friendsform = FriendsForm(request.user,\
@@ -101,14 +101,14 @@ def add(request):
     add_name = request.GET['name']
     add_user = User.objects.filter(username = add_name).first()
     if add_user == request.user:
-        messages.info(request, "自分をfriendにはできません")
+        messages.info(request, "Oops!! you can't be your Friend")
         return redirect(to = '/sns')
     (public_user, public_group) = get_public()
     frd_num = Friend.objects.filter(owner = request.user)\
             .filter(user = add_user).count()
     if frd_num > 0:
         messages.info(request, add_user.username + \
-                'はすでに追加されています')
+                'is already your Friend, sorry..')
         return redirect(to = '/sns')
 
     frd = Friend()
@@ -117,8 +117,8 @@ def add(request):
     frd.group = public_group
     frd.save()
 
-    messages.success(request, add_user.username + 'を追加しました。\
-        groupページに移動してください')
+    messages.success(request, add_user.username + 'is successfully add to Group!!\
+        Now goto group page!!')
     return redirect(to = '/sns')
 
 @login_required(login_url = '/admin/login/')
@@ -127,7 +127,7 @@ def creategroup(request):
     gp.owner = request.user
     gp.title = request.POST['group_name']
     gp.save()
-    messages.info(request, "新しいグループを作成しました")
+    messages.info(request, "you created new group")
     return redirect(to = '/sns/groups')
 
 @login_required(login_url = '/admin/login/')
@@ -144,7 +144,7 @@ def post(request):
         msg.group = group
         msg.content = content
         msg.save()
-        messages.success(request, "新しいグループをメッセージを投稿しました")
+        messages.success(request, "You posted new message")
         return redirect(to = '/sns')
     else:
         form = PostForm(request.user)
@@ -173,7 +173,7 @@ def share(request, share_id):
         share_msg = msg.get_share()
         share_msg.share_count += 1
         share_msg.save()
-        messages.success(request, "メッセージをシェアしました")
+        messages.success(request, "message shared")
         return redirect(to = '/sns')
     form = PostForm(request.user)
     params = {
@@ -189,7 +189,7 @@ def good(request, good_id):
     is_good = Good.objects.filter(owner = request.user)\
             .filter(message = good_msg).count()
     if is_good > 0:
-        messages.success(request, "すでにgood済です")
+        messages.success(request, "you already make GOOD to it")
         return redirect(to = '/sns')
     good_msg.good_count += 1
     good_msg.save()
@@ -197,7 +197,7 @@ def good(request, good_id):
     good.owner = request.user
     good.message = good_msg
     good.save()
-    messages.success(request, "メッセージにgoodしました")
+    messages.success(request, "you made GOOD to it!!")
     return redirect(to = '/sns')
 
 def get_your_group_message(owner, glist, find):
