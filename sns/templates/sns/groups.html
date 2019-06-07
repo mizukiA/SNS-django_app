@@ -5,7 +5,7 @@
 {% block header %}
 
 <h1>group</h1>
-<p class = "caption">グループを選択、編集する</p>
+<p class = "caption">select group, edit</p>
 
 {% if messages %}
 <ul class ="messages">
@@ -28,12 +28,12 @@
 <form action = "{% url 'groups' %}" method="post">
 {% csrf_token %}
 <input type="hidden" name = "mode" value = "__friends_form__">
-<input type="hidden" name = "mode" value = "{{group}}">
+<input type="hidden" name = "group" value = "{{group}}">
 {{friends_form}}
 <button>set members</button>
 </form>
 <hr>
-<p>新規group登録</p>
+<p>create new group</p>
 <form action = "{% url 'creategroup' %}" method="post">
 {% csrf_token %}
 {{create_form}}

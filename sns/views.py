@@ -5,10 +5,54 @@ from django.contrib import messages
 
 from .models import Message, Friend, Group, Good
 from .forms import GroupCheckForm, GroupSelectForm,\
-        SearchForm, FriendsForm, CreateGroupForm, PostForm
+        SearchForm, FriendsForm, Creategroupsform, PostForm
 
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+
+from django.http import HttpResponseRedirect
+from .forms import UploadFileForm
+# Imaginary function to handle an uploaded file.
+# from somewhere import handle_uploaded_file
+
+from django.http import HttpResponseRedirect
+# from .forms import ModelFormWithFileField
+from django.views.generic.edit import FormView
+from .forms import FileFieldForm
+
+class FileFieldView(FormView):
+    form_class = FileFieldForm
+    template_name = 'upload.html'  # Replace with your template.
+    success_url = '...'  # Replace with your URL or reverse().
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        files = request.FILES.getlist('file_field')
+        if form.is_valid():
+            for f in files:
+                ...  # Do something with each file.
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+def upload_file(request):
+    if request.method == 'POST':
+        form = ModelFormWithFileField(request.POST, request.FILES)
+        # form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # handle_uploaded_file(request.FILES['file'])
+            form.save()
+            return HttpResponseRedirect('/success/url/')
+    else:
+        # form = UploadFileForm()
+        form = ModelFormWithFileField()
+    return render(request, 'upload.html', {'form': form})
+
+def handle_uploaded_file(f):
+    with open('some/file/name.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
 
 @login_required(login_url = '/admin/login/')
 def index(request):
@@ -75,8 +119,8 @@ def groups(request):
                 item.group = group_obj
                 item.save()
                 vlist.append(item.user.username)
-            messages.success(request, 'チェックされたFriendを' + \
-                    sel_group + 'に登録しました')
+            messages.success(request, 'selected Friend add to' + \
+                    sel_group + '!!')
             groupsform = GroupSelectForm(request.user,\
                     {'groups': sel_group})
             friendsform = FriendsForm(request.user,\
@@ -86,7 +130,7 @@ def groups(request):
         friendsform = FriendsForm(request.user, friends = friends,\
                 vals = [])
         sel_group = '-'
-    createform = CreateGroupForm()
+    createform = Creategroupsform()
     params = {
             'login_user':request.user,
             'groups_form':groupsform,
@@ -101,14 +145,14 @@ def add(request):
     add_name = request.GET['name']
     add_user = User.objects.filter(username = add_name).first()
     if add_user == request.user:
-        messages.info(request, "自分をfriendにはできません")
+        messages.info(request, "you can't be your friend")
         return redirect(to = '/sns')
     (public_user, public_group) = get_public()
     frd_num = Friend.objects.filter(owner = request.user)\
             .filter(user = add_user).count()
     if frd_num > 0:
         messages.info(request, add_user.username + \
-                'はすでに追加されています')
+                'is already added')
         return redirect(to = '/sns')
 
     frd = Friend()
@@ -117,8 +161,8 @@ def add(request):
     frd.group = public_group
     frd.save()
 
-    messages.success(request, add_user.username + 'を追加しました。\
-        groupページに移動してください')
+    messages.success(request, add_user.username + 'is successfully added!'\
+        'move to group page')
     return redirect(to = '/sns')
 
 @login_required(login_url = '/admin/login/')
@@ -127,7 +171,7 @@ def creategroup(request):
     gp.owner = request.user
     gp.title = request.POST['group_name']
     gp.save()
-    messages.info(request, "新しいグループを作成しました")
+    messages.info(request, "make new group!!")
     return redirect(to = '/sns/groups')
 
 @login_required(login_url = '/admin/login/')
@@ -144,7 +188,7 @@ def post(request):
         msg.group = group
         msg.content = content
         msg.save()
-        messages.success(request, "新しいグループをメッセージを投稿しました")
+        messages.success(request, "posted new message!")
         return redirect(to = '/sns')
     else:
         form = PostForm(request.user)
@@ -173,7 +217,7 @@ def share(request, share_id):
         share_msg = msg.get_share()
         share_msg.share_count += 1
         share_msg.save()
-        messages.success(request, "メッセージをシェアしました")
+        messages.success(request, "message shared")
         return redirect(to = '/sns')
     form = PostForm(request.user)
     params = {
@@ -189,7 +233,7 @@ def good(request, good_id):
     is_good = Good.objects.filter(owner = request.user)\
             .filter(message = good_msg).count()
     if is_good > 0:
-        messages.success(request, "すでにgood済です")
+        messages.success(request, "already you made good")
         return redirect(to = '/sns')
     good_msg.good_count += 1
     good_msg.save()
@@ -197,7 +241,7 @@ def good(request, good_id):
     good.owner = request.user
     good.message = good_msg
     good.save()
-    messages.success(request, "メッセージにgoodしました")
+    messages.success(request, "good to message!")
     return redirect(to = '/sns')
 
 def get_your_group_message(owner, glist, find):
@@ -227,4 +271,5 @@ def get_public():
     public_user = User.objects.filter(username = 'public').first()
     public_group = Group.objects.filter\
             (owner = public_user).first()
+    # form = SampleForm(request.POST, request.FILES)
     return (public_user, public_group)

@@ -46,3 +46,21 @@ class Good(models.Model):
   def __str__(self):
       return 'good_for"' + str(self.message) + '"(by' + \
               str(self.owner) + ')'
+
+attach = models.FileField(
+        upload_to='uploads/%Y/%m/%d/',
+        verbose_name='添付ファイル',
+    )
+image = models.ImageField(
+        upload_to='files/',
+        verbose_name='添付画像',
+        height_field='url_height',
+        width_field='url_width',
+    )
+
+url_height = models.IntegerField(
+        editable=False,
+        )
+url_width = models.IntegerField(
+        editable=False,
+        )

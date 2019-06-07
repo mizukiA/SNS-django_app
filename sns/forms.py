@@ -7,7 +7,7 @@ class MessageForm(forms.ModelForm):
     model = Message
     fields = ['owner', 'group', 'content']
 
-class GroupForm(forms.ModelForm):
+class groupsform(forms.ModelForm):
   class Meta:
     model = Group
     fields = ['owner', 'title']
@@ -52,7 +52,7 @@ class FriendsForm(forms.Form):
             initial = vals
     )
 
-class CreateGroupForm(forms.Form):
+class Creategroupsform(forms.Form):
     group_name = forms.CharField(max_length = 100)
 
 class PostForm(forms.Form):
@@ -66,3 +66,10 @@ class PostForm(forms.Form):
                       for item in Group.objects.\
                       filter(owner__in = [user, public])],
         )
+
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
+class FileFieldForm(forms.Form):
+    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))

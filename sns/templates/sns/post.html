@@ -5,7 +5,7 @@
 {% block header %}
 
 <h1>post</h1>
-<p class = "caption">投稿先のグループを選択、メッセージ投稿する</p>
+<p class = "caption">select group、post message</p>
 
 {% if messages %}
 <ul class ="messages">
@@ -19,6 +19,7 @@
 
 {% block content %}
 <form action = "{% url 'post' %}" method="post">
+<form method="post" id="myform" enctype="multipart/form-data">
 {% csrf_token %}
 <table>
 {{form.as_table}}
